@@ -1,13 +1,13 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import sqlite3
 from datetime import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
 
 #1. getting information from the user
 st.text_input("Your company's name", key="company_name")
 
-with st.expander("Energy Usage", expanded=True):
+with st.expander("Energy Usage Questions", expanded=True):
     electricity_bill = st.number_input("What is your average monthly electricity bill in euros?", min_value=0, value=None, placeholder="Type a number...")
     gas_bill = st.number_input('What is your average monthly gas bill in euros?', min_value=0, value=None, placeholder="Type a number...")
     fuel_bill = st.number_input('What is your average monthly fuel bill for transportation in euros?', min_value=0, value=None, placeholder="Type a number...")
@@ -16,7 +16,7 @@ with st.expander("Energy Usage", expanded=True):
         energy_usage = round((electricity_bill * 12 * 0.0005) + (gas_bill * 12 * 0.0053) + (fuel_bill * 12 * 2.32), 2)
         st.write("#### Energy's part in your carbot footprint is ", energy_usage, "kgCO2")
 
-with st.expander("Waste", expanded=True):
+with st.expander("Waste Questions", expanded=True):
     waste_amt = st.number_input('How much waste do you generate per month in kilograms?', min_value=0, value=None, placeholder="Type a number...")
     recycled_prc = st.slider('How much of that waste is recycled or composed (in percentage)?', 0, 100, 20)
 
@@ -24,7 +24,7 @@ with st.expander("Waste", expanded=True):
         waste = round(waste_amt * 12 * (0.57-recycled_prc/100), 2)
         st.write("#### Waste's part in your carbot footprint is", waste, "kgCO2")
 
-with st.expander("Business Travel", expanded=True):
+with st.expander("Business Travel Questions", expanded=True):
     travel_km = st.number_input('How many kilometers do your employees travel per year for business purposes?', min_value=0, value=None, placeholder="Type a number...")
     fuel_eff = st.slider('What is the average fuel efficiency of the vehicles used for business travel in liters per 100 kilometers?', 0, 25, 7)
 
@@ -43,7 +43,7 @@ def save_user_value(company_name, electricity_bill, gas_bill, fuel_bill, waste_a
     conn.commit()  
     conn.close()   
 
-def get_user_value(type):
+def get_values(type):
     conn = sqlite3.connect("data.db")  
     cursor = conn.cursor()
     if type == 'energy':
@@ -83,17 +83,88 @@ def get_user_value(type):
 
 if st.button('Submit my data', type='primary') and st.session_state.company_name and pd.isna(electricity_bill) == False:
     #3. creating dataframe with entered data
+    total = round(energy_usage + waste + travel, 2)
+    energy_usage_median = get_values('energy')
+    waste_median = get_values('waste')
+    travel_median = get_values('travel')
+    total_median = round(energy_usage_median + waste_median + travel_median, 2)
+
+    energy_usage_diff = str(round((energy_usage / energy_usage_median - 1) * 100, 2)) + " %"
+    waste_diff = str(round((waste / waste_median - 1) * 100, 2)) + " %"
+    travel_diff = str(round((travel / travel_median - 1) * 100, 2)) + " %"
+    total_diff = str(round((total / total_median - 1) * 100, 2)) + " %"
+
     chart_data = pd.DataFrame(
         {
-            "Comparison": [st.session_state.company_name, "Average"],
-            "Energy Usage": [energy_usage, get_user_value('energy')],
-            "Waste": [waste, get_user_value('waste')],
-            "Business Travel": [travel, get_user_value('travel')]
+            "Comparison": [st.session_state.company_name, "Median", "Difference"],
+            "Energy Usage": [energy_usage, energy_usage_median, energy_usage_diff],
+            "Waste": [waste, waste_median, waste_diff],
+            "Business Travel": [travel, travel_median, travel_diff],
+            "Total": [total, total_median, total_diff]
         }
         )
 
     #4. submitting user's data, visualizing it and comparing it with our database's average
     save_user_value(st.session_state.company_name, electricity_bill, gas_bill, fuel_bill, waste_amt, recycled_prc, travel_km, fuel_eff, response_date)
 
+    st.write("##### Comparison of yours and other companies' carbon footprints")
+    st.write("###### Absolute values")
     chart_data
-    st.bar_chart(chart_data, x="Comparison", y=["Energy Usage", "Waste", "Business Travel"], stack=False)
+    
+    st.write("###### Shares of carbon footprint components")
+    labels = ['Energy Usage', 'Waste', 'Business Travel'] #chart_data.iloc[0] #chart_data['Comparison'] #'Energy Usage', 'Hogs', 'Dogs', 'Logs'
+    sizes = [energy_usage, waste, travel]
+    sizes_median = [energy_usage_median, waste_median, travel_median]
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    axes[0].pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+    axes[0].set_title(f"{st.session_state.company_name} company")
+    #ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    
+    axes[1].pie(sizes_median, labels=labels, autopct='%1.1f%%', startangle=90)
+    axes[1].set_title("Median values for all companies")
+    
+    st.pyplot(fig)
+
+    st.write("##### Recommendations")
+    if energy_usage <= 50:
+        st.write("**You have low energy related emissions.**")
+        st.write("*Great job!* Your energy consumption is efficient. Maintain current practices by conducting periodic energy audits to ensure no inefficiencies creep in.")
+    elif energy_usage <= 150:
+        st.write("**You have moderate energy related emissions. You can use this tips to reduce them:**")
+        st.write("1. *Switch to renewable energy.* Opt for green energy contracts or install on-site solar panels.")
+        st.write("2. *Upgrade infrastructure.* Use LED lighting, energy-efficient HVAC systems, and appliances with high energy-star ratings.")
+        st.write("3. *Reduce idle energy.* Implement smart controls for lighting and machinery, ensuring devices are off when not in use.")
+    else:
+        st.write("**You have high energy related emissions. You can use this tips to reduce them:**")
+        st.write("1. *Conduct an energy audit.* Pinpoint high-consumption areas and reduce wasteful practices.")
+        st.write("2. *Insulate and retrofit.* Improve building insulation and consider energy-efficient retrofits like double-glazed windows.")
+        st.write("3. *Electrify transportation.* Replace fossil-fuel-powered generators or vehicles with electric alternatives.")
+
+    if waste <= 20:
+        st.write("**You have low waste related emissions.**")
+        st.write("*Excellent work!* Your waste management practices are exemplary. Keep monitoring and look for ways to further minimize waste.")
+    elif waste <= 50:
+        st.write("****You have moderate waste related emissions. You can use this tips to reduce them:**")
+        st.write("1. *Boost recycling.* Expand recycling initiatives and educate employees on proper waste segregation.")
+        st.write("2. *Reduce single-use items.* Eliminate disposable plastics in favor of reusable or biodegradable options.")
+        st.write("3. *Implement waste reduction policies.* Encourage double-sided printing, paperless offices, and composting.")
+    else:
+        st.write("**You have high waste related emissions. You can use this tips to reduce them:**")
+        st.write("1. *Conduct a waste audit.* Analyze waste streams to identify excessive or inefficient practices.")
+        st.write("2. *Collaborate on sustainability.* Work with suppliers to minimize packaging or switch to sustainable options.")
+        st.write("3. *Pursue zero waste initiatives.* Implement a circular economy approach by finding ways to repurpose waste.")
+    
+    if travel <= 100:
+        st.write("**You have low travel related emissions.**")
+        st.write("*Fantastic!* Your travel-related emissions are well under control. Maintain virtual meetings and promote energy-conscious travel behaviors.")
+    elif travel <= 300:
+        st.write("****You have moderate travel related emissions. You can use this tips to reduce them:**")
+        st.write("1. *Optimize travel plans.* Plan efficient routes and consolidate trips to minimize fuel use.")
+        st.write("2. *Shift travel modes.* Use public transport, carpooling, or cycling for shorter distances.")
+        st.write("3. *Adopt hybrid options.* Use hybrid vehicles or fuel-efficient car rentals for business trips.")
+    else:
+        st.write("**You have high travel related emissions. You can use this tips to reduce them:**")
+        st.write("1. *Electrify business travel.* Transition to electric vehicles and promote train travel over flights for short distances.")
+        st.write("2. *Limit non-essential travel.* Shift to virtual meetings and reduce the need for in-person travel.")
+        st.write("3. *Offset emissions.* Invest in carbon credits or green initiatives to neutralize the travel-related impact.")
