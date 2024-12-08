@@ -16,5 +16,7 @@ with st.expander("Why does my company need this?"):
     st.write('###### 4. Cost Savings')
     st.write("Measuring carbon emissions helps companies reveal inefficiencies and wasteful practices, leading to cost-saving opportunities.")
 
-st.write('''Ready for the action?\nLet's calculate your company's carbon footprint!''')
+st.write('''Ready to take some action?\nLet's calculate your company's carbon footprint!''')
 st.page_link("pages/Questions.py", label='Go to questions', icon="😍")
+st.page_link("pages/Summary.py", label='Go to summary', icon="📈")
+
