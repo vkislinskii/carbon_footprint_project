@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+st.subheader('Questionnaire', divider="gray")
 #1. getting information from the user
 st.text_input("Your company's name", key="company_name")
 
@@ -118,7 +119,8 @@ if st.button('Submit my data', type='primary') and st.session_state.company_name
     #4. submitting user's data, visualizing it and comparing it with our database's average
     save_user_value(st.session_state.company_name, electricity_bill, gas_bill, fuel_bill, waste_amt, recycled_prc, travel_km, fuel_eff, response_date, energy_usage, waste, travel)
 
-    st.write("##### Comparison of yours and other companies' carbon footprints")
+    st.subheader("Comparison of yours and other companies' carbon footprints", divider="gray")
+    #st.write("##### Comparison of yours and other companies' carbon footprints")
     st.write("###### Absolute values")
 
     chart_data = chart_data.style.apply(highlight_row, axis=1)

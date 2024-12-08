@@ -103,32 +103,8 @@ df_long2 = df_long.sort_values(by=['company_name', 'emission_type'])
 
 
 # 2.2. total emissions by company
-st.write("###### Total emissions per company by emission type")
+st.write("###### Total emissions per company")
 plt.figure(figsize=(10, 6))
-sns.barplot(x='company_name', y='emission_amount', data=df_long, palette='viridis', ci=None) #, hue='emission_type'
-#plt.xticks(rotation=45)
-st.pyplot(plt)
-
-with st.expander("Separate plots by emission type", expanded=False):
-    # 2.3. specific emission type by company
-    st.write("###### Energy Usage Emissions per company")
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='company_name', y='energy_usage_emission', data=data, palette='crest')
-    st.pyplot(plt)
-
-
-    st.write("###### Waste Emissions per company")
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='company_name', y='waste_emission', data=data, palette='coolwarm')
-    st.pyplot(plt)
-
-    st.write("###### Travel Emissions per company")
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='company_name', y='travel_emission', data=data, palette='crest')
-    st.pyplot(plt)
-
-st.write("###### Emission share per company by type")
-plt.figure(figsize=(10, 6))
-sns.barplot(x='company_name', y='share', data=df_long2, hue='emission_type', palette='viridis', ci=None)
+sns.barplot(x='company_name', y='total_emission', data=df_long, palette='coolwarm', ci=None) #, hue='emission_type'
 #plt.xticks(rotation=45)
 st.pyplot(plt)
