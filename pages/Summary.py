@@ -88,7 +88,7 @@ total_emission_distribution = plot_total_emission_distribution(data)
 st.pyplot(total_emission_distribution)
 
 
-#2. Overview visualizations
+#2. Overview visualizations by company
 st.subheader('Companies Overview', divider="gray")
 
 #2.1. Table data

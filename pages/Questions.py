@@ -187,11 +187,3 @@ if st.button('Submit my data', type='primary'):
         #6. Recommendations
         st.write("##### Recommendations")
         display_recommendations(energy_usage, waste, travel)
-
-
-
-
-    
-
-
-    #4. submitting user's data, visualizing it and comparing it with our database's average
