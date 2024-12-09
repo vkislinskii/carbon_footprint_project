@@ -12,7 +12,7 @@ This study project presents a tool for a fictional ecological consultant firm. T
    ```sh
    git clone https://github.com/vkislinskii/carbon_footprint_project.git
    ```
-2. Create virtual environment
+2. Create virtual environment  
 3. Install the packages 
    ```sh
    pip install streamlit
@@ -26,15 +26,10 @@ This study project presents a tool for a fictional ecological consultant firm. T
 
 ### Pages Overview and Usage
 
-1. "Introduction" page
-
+1. "Introduction" page  
 This onboarding page provides an overview of the potential motivations for companies to use the service. It serves as an entry point, offering basic context  
-
-2. "Questions" page
-
+2. "Questions" page  
 This page allows clients to input their company data to calculate emissions. It also generates comprehensive recommendations for emission reduction. 
 Additionally, sample recommendations can be accessed in the ```/carbon_footprint_project/reports``` folder to illustrate the output.  
-
-3. "Summary" page
-
+3. "Summary" page  
 This page offers a high-level summary across all of the companies, highlighting key trends and dynamics. It provides an overview for the consultant firm workers to assist in understanding their clients.
