@@ -133,9 +133,10 @@ st.subheader('Questionnaire', divider="gray")
 
 #1. getting information from the user
 company_name, electricity, gas, fuel, waste_amt, recycled_prc, travel_km, fuel_eff = get_user_inputs()
+check_variable = pd.isna(electricity) + pd.isna(gas) + pd.isna(fuel) + pd.isna(waste_amt) + pd.isna(travel_km)
 
-if st.button("Submit Data"):
-    if company_name:
+if st.button('Submit my data', type='primary'):
+    if company_name and check_variable == False:
         #2. Calculating emissions of the company
         energy_usage, waste, travel = calculate_emissions(electricity, gas, fuel, waste_amt, recycled_prc, travel_km, fuel_eff)
 
